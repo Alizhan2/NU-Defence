@@ -1,0 +1,20 @@
+# Local installation/runtime files
+python-*.exe
+GeoWatch-AI/.runtime/
+GeoWatch-AI/.earth_runtime/
+GeoWatch-AI/.browser-build/
+GeoWatch-AI/.playwright-cli/
+GeoWatch-AI/.pptx-build/
+GeoWatch-AI/.codex-finalizer/
+GeoWatch-AI/.pytest*/
+GeoWatch-AI/__pycache__/
+GeoWatch-AI/streamlit.*.log
+GeoWatch-AI/data/api.*.log
+
+# Generated data, model weights and exports
+GeoWatch-AI/data/runs/
+GeoWatch-AI/runs/
+GeoWatch-AI/datasets/
+GeoWatch-AI/models/*.pt
+GeoWatch-AI/*.pt
+GeoWatch-AI/submission/*.zip

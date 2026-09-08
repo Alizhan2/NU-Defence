@@ -1,0 +1,22 @@
+"""Start the GeoWatch FastAPI service with the same local runtime as the UI."""
+
+from __future__ import annotations
+
+import os
+from pathlib import Path
+import sys
+
+import uvicorn
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "src.api:app",
+        host=os.getenv("GEOWATCH_API_HOST", "127.0.0.1"),
+        port=int(os.getenv("GEOWATCH_API_PORT", "8000")),
+        reload=False,
+    )

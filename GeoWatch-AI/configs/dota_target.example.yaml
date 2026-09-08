@@ -1,0 +1,11 @@
+# Stage 2 example. Point `path` at a prepared, non-committed DOTA subset.
+path: ../data/dota_target
+train: images/train
+val: images/val
+test: images/test
+
+names:
+  0: aircraft
+  1: ship
+  2: small vehicle
+  3: large vehicle

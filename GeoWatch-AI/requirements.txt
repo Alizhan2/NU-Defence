@@ -1,0 +1,15 @@
+streamlit>=1.38,<2
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30,<1
+python-multipart>=0.0.9
+pydantic>=2.8,<3
+numpy>=1.26,<3
+pillow>=10.4,<12
+opencv-python-headless>=4.10,<5
+ultralytics>=8.3,<9
+pandas>=2.2,<3
+reportlab>=4.2,<5
+pytest>=8.3,<9
+# Optional GeoTIFF: rasterio>=1.4
+# Optional Google Earth Engine: earthengine-api>=1.5
+# Optional Qwen: transformers>=4.57, accelerate>=1.0, torch>=2.4

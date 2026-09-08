@@ -1,0 +1,33 @@
+# Python and local tooling
+__pycache__/
+.runtime/
+.earth_runtime/
+*.py[cod]
+.venv/
+.env
+.env.*
+!.env.example
+.pytest_cache/
+.mypy_cache/
+
+# Local application outputs
+data/runs/
+runs/
+wandb/
+*.cache
+
+# Datasets, checkpoints and large exports
+datasets/
+data/dota4/
+data/dota8_stage2/
+models/*.pt
+*.pt
+*.onnx
+*.engine
+*.zip
+
+# Editor and OS files
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
