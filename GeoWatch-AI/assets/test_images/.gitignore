@@ -1,0 +1,3 @@
+# Large external imagery is kept locally for manual testing only.
+real_pair/*.tif
+real_pair/*.tiff
