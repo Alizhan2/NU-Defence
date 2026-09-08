@@ -1,3 +1,4 @@
 # Large external imagery is kept locally for manual testing only.
-real_pair/*.tif
-real_pair/*.tiff
+# Full-resolution source scenes and derived crops stay local: they are download-ready
+# through README.md and must not inflate the Git repository.
+real_pair/
