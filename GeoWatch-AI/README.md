@@ -67,6 +67,13 @@ python scripts/prepare_dota4.py --source D:\datasets\dota_yolo_obb --output data
 python scripts/verify_dataset.py --data data\dota4\dota4.yaml
 ```
 
+Для нового компьютера, где датасета ещё нет, есть однокомандная подготовка: она скачивает подготовленный Ultralytics DOTAv1 archive (~2 GB), извлекает его, оставляет только четыре целевых класса и создаёт DOTA4. Убедитесь, что использование соответствует академической лицензии оригинального DOTA:
+
+```powershell
+python scripts/prepare_dota4_from_archive.py --download
+python scripts/verify_dataset.py --data data\dota4\dota4.yaml
+```
+
 3. Запустите обучение для seed `42`, `43` и `44`; модель и threshold выбирайте только по validation.
 4. Запустите `scripts/evaluate.py --split test` один раз для выбранного checkpoint и сохраните полученный JSON вместе с seed, параметрами запуска, версией кода и manifest датасета.
 
