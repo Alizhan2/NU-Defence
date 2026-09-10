@@ -1,0 +1,21 @@
+Тема: NU STeP × Defence Tech Challenge — GeoWatch AI
+
+Здравствуйте!
+
+Направляем конкурсный проект GeoWatch AI — MVP для первичного анализа открытых космических снимков, сравнения пар «до / после» и формирования проверяемой очереди наблюдений для аналитика.
+
+Команда:
+Бижан Әлижан — Team Lead
+Қанымбек Марат — Backend
+Құлтас Баубек — Frontend
+
+Во вложении:
+1. GeoWatch_AI_Competition_Deck_Final.pptx
+2. GeoWatch_AI_Competition_Deck_Final.pdf
+3. GeoWatch_AI_Source_2026-09-08.zip
+4. Скриншоты интерфейса
+
+Репозиторий: https://github.com/Alizhan2/NU-Defence
+
+С уважением,
+команда GeoWatch AI
