@@ -10,9 +10,10 @@ import streamlit as st
 from PIL import Image, ImageDraw
 
 from src.alerting import AlertRule, AlertStore, evaluate_alert_rules
-from src.config import model_evidence, settings
+from src.config import ROOT, model_evidence, settings
 from src.change_detection import compare_results
 from src.demo_case import load_demo_temporal_case
+from src.demo_cases import load_demo_case_catalog, load_spacenet_baseline_evidence
 from src.earth_engine import EarthEngineAdapter, EarthEngineError, GeoArea, ScenePairRequest
 from src.case_service import case_store
 from src.image_store import image_store
@@ -484,7 +485,50 @@ if page == "Изменения":
     st.caption("Сравнение одной территории в два периода. Все события являются кандидатами и требуют проверки аналитиком.")
     st.markdown(temporal_workbench(), unsafe_allow_html=True)
 
-    source = st.radio("Источник снимков", ["Загрузить два снимка", "Google Earth Engine", "Демо-сценарий"], horizontal=True, key="scene_source")
+    source = st.radio("Источник снимков", ["Загрузить два снимка", "Google Earth Engine", "Реальные кейсы", "Демо-сценарий"], horizontal=True, key="scene_source")
+    baseline = load_spacenet_baseline_evidence(ROOT)
+    with st.expander(f"SpaceNet 7 baseline · {baseline.label}", expanded=baseline.status == "unverified"):
+        st.caption(baseline.detail)
+        if baseline.metrics:
+            st.dataframe(pd.DataFrame([{"Метрика": key, "Значение": value} for key, value in baseline.metrics.items()]), use_container_width=True, hide_index=True)
+        if baseline.status != "verified_test":
+            st.warning("Эти данные нельзя использовать как подтверждённую точность модели строительства.")
+    if source == "Реальные кейсы":
+        try:
+            real_cases = load_demo_case_catalog(ROOT)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            st.error(f"Каталог реальных кейсов повреждён: {exc}")
+            st.stop()
+        if not real_cases:
+            st.info("Каталог ещё не подготовлен. Ожидается data/demo_cases/catalog.json с локальными evidence-изображениями.")
+            st.stop()
+        selected_case = st.selectbox(
+            "Демонстрационный кейс", real_cases,
+            format_func=lambda item: f"{item.event_label} · {item.title}", key="real_demo_case",
+        )
+        evidence_tone = "signal" if selected_case.evidence_status == "ground_truth" else "warn"
+        st.markdown(kpi_grid([
+            ("Событие", selected_case.event_label, selected_case.title, evidence_tone),
+            ("Evidence", selected_case.evidence_label, selected_case.note or "требуется проверка", evidence_tone),
+            ("Территория", selected_case.aoi, selected_case.attribution or "источник указан в каталоге", "neutral"),
+            ("Интервал", f"{(selected_case.after_date - selected_case.before_date).days} дней", f"{selected_case.before_date:%d.%m.%Y} — {selected_case.after_date:%d.%m.%Y}", "neutral"),
+        ]), unsafe_allow_html=True)
+        if selected_case.evidence_status != "ground_truth":
+            st.warning("Кейс использует реальные снимки, но событие ещё не подтверждено разметкой или аналитиком.")
+        else:
+            st.success("Событие основано на разметке источника; вывод модели оценивается отдельно.")
+        if selected_case.source_url:
+            st.markdown(f"Источник: [{selected_case.attribution or selected_case.source_url}]({selected_case.source_url}) · лицензия: {selected_case.license}")
+        if not selected_case.is_ready:
+            st.error("Evidence-файлы этого кейса отсутствуют локально. Метаданные показаны, но визуальное сравнение недоступно.")
+            st.stop()
+        before_case = Image.open(selected_case.before_image).convert("RGB")
+        after_case = Image.open(selected_case.after_image).convert("RGB")
+        left, right = st.columns(2)
+        left.image(before_case, caption=f"До · {selected_case.before_date:%d.%m.%Y}", use_container_width=True)
+        right.image(after_case, caption=f"После · {selected_case.after_date:%d.%m.%Y}", use_container_width=True)
+        st.caption("Реальная пара предназначена для воспроизводимого demo review. Наличие снимков не является доказательством качества ML-модели.")
+        st.stop()
     if source == "Демо-сценарий":
         demo = load_demo_temporal_case()
         st.warning(demo.disclaimer)
