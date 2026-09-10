@@ -224,6 +224,19 @@ Add-Text $slide 'Интерфейс, визуализация и пользов�
 Add-Box $slide 54 550 1170 74 $navy 1 | Out-Null
 Add-Text $slide 'Вложить в письмо: презентацию (.pptx / .pdf), исходники (.zip), 2 скриншота и ссылку на GitHub.' 82 575 1060 25 17 $white $false | Out-Null
 
+# 11. Test evidence
+$slide = New-Slide; Add-Header $slide 'Проверки и тестовое evidence' 11
+Add-Text $slide 'Тестовый контур покрывает критичные пользовательские сценарии и правила безопасной аналитики.' 54 178 1040 34 22 $ink $true | Out-Null
+Add-Card $slide 54 240 500 346 | Out-Null
+Add-Text $slide 'Зафиксированная проверка' 84 272 320 30 21 $ink $true | Out-Null
+Add-Box $slide 84 322 438 162 $navy 1 | Out-Null
+Add-Text $slide "PS> pytest -q`n........................................`n........................................`n95 passed, 2 warnings" 108 350 390 112 16 $white $false | Out-Null
+Add-Text $slide 'Это зафиксированный локальный прогон из docs/submission_readiness.md; не новый запуск на машине Demo Day.' 84 511 412 49 14 $muted $false | Out-Null
+Add-Card $slide 610 240 616 346 | Out-Null
+Add-Text $slide 'Что покрывают реальные модули tests/' 640 272 470 30 21 $ink $true | Out-Null
+Add-Text $slide "API и пользовательский smoke-flow`n  test_api_smoke.py, test_image_store.py, test_job_queue.py`nTemporal-логика и безопасность пары`n  test_temporal_ui.py, test_pair_validation.py, test_change_detection.py`nReview, кейсы и выгрузки`n  test_review.py, test_cases.py, test_case_export.py`nМодель, evidence и quality gates`n  test_model_audit.py, test_model_evidence.py, test_image_quality.py" 640 320 520 220 15 $muted $false | Out-Null
+Add-Text $slide 'Повторный запуск перед показом: python -m pytest -q  •  результат прикладывается к комплекту как актуальный лог.' 54 630 1110 22 16 $teal $true | Out-Null
+
 if (Test-Path $deckPath) { Remove-Item -LiteralPath $deckPath -Force }
 if (Test-Path $pdfPath) { Remove-Item -LiteralPath $pdfPath -Force }
 $presentation.SaveAs($deckPath, 24)
@@ -234,5 +247,6 @@ $ppt.Quit()
 [Runtime.InteropServices.Marshal]::ReleaseComObject($ppt) | Out-Null
 [GC]::Collect(); [GC]::WaitForPendingFinalizers()
 Write-Host "Created $deckPath"
+
 
 

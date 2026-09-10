@@ -2,7 +2,7 @@
 
 Состав:
 
-- `GeoWatch_AI_Competition_Deck_Final.pptx` — финальная презентация на 10 слайдов с составом команды, продуктом, архитектурой, demo-flow, DOTA4-метриками и честными ограничениями;
+- `GeoWatch_AI_Competition_Deck_Final.pptx` — финальная презентация на 11 слайдов с составом команды, продуктом, архитектурой, demo-flow, DOTA4-метриками, тестовым evidence и честными ограничениями;
 - `GeoWatch_AI_Competition_Deck_Final.pdf` — версия презентации для быстрого просмотра;
 - `screenshots/dashboard.png` — реальный главный экран;
 - `screenshots/temporal_workspace.png` — реальный temporal demo workspace;
