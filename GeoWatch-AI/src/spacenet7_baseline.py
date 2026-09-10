@@ -139,13 +139,23 @@ def make_dataset(torch: Any, manifest_path: Path, split: str, patch_size: int, s
     root = Path(manifest["root"])
 
     class Dataset(torch.utils.data.Dataset):
+        def __init__(self):
+            self._cached_record_index = None
+            self._cached_arrays = None
+
         def __len__(self):
             return len(records) * samples_per_pair
 
         def __getitem__(self, index):
-            record_index = index % len(records)
-            sample_slot = index // len(records)
-            arrays = load_pair(root, records[record_index])
+            # Keep all deterministic patches for one temporal pair contiguous.
+            # This lets workers reuse the decoded GeoTIFFs instead of reading the
+            # same four rasters once per patch (the dominant cost on Colab).
+            record_index = index // samples_per_pair
+            sample_slot = index % samples_per_pair
+            if self._cached_record_index != record_index:
+                self._cached_arrays = load_pair(root, records[record_index])
+                self._cached_record_index = record_index
+            arrays = self._cached_arrays
             image, target = _pad(arrays.image, patch_size), _pad(arrays.target, patch_size)
             height, width = target.shape
             rng = random.Random(seed + index * 104729)
@@ -184,12 +194,19 @@ def make_eval_dataset(torch: Any, manifest_path: Path, split: str, patch_size: i
                 tiles.append((record_index, top, left))
 
     class EvalDataset(torch.utils.data.Dataset):
+        def __init__(self):
+            self._cached_record_index = None
+            self._cached_arrays = None
+
         def __len__(self):
             return len(tiles)
 
         def __getitem__(self, index):
             record_index, top, left = tiles[index]
-            arrays = load_pair(root, records[record_index])
+            if self._cached_record_index != record_index:
+                self._cached_arrays = load_pair(root, records[record_index])
+                self._cached_record_index = record_index
+            arrays = self._cached_arrays
             image = arrays.image
             target = arrays.target
             pad_h = max(0, top + patch_size - target.shape[0])

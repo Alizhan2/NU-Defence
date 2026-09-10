@@ -40,8 +40,9 @@ def main() -> None:
     manifest_path = args.manifest.resolve()
     train_data, train_records, manifest = make_dataset(torch, manifest_path, "train", args.patch_size, args.samples_per_pair, args.seed)
     val_data, val_records, _, val_tiles = make_eval_dataset(torch, manifest_path, "val", args.patch_size)
-    generator = torch.Generator().manual_seed(args.seed)
-    train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch, shuffle=True, num_workers=args.workers, generator=generator)
+    # Samples are grouped by temporal pair so the dataset can reuse decoded
+    # GeoTIFFs across that pair's patches. Patch locations remain deterministic.
+    train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch, shuffle=False, num_workers=args.workers)
     val_loader = torch.utils.data.DataLoader(val_data, batch_size=args.batch, shuffle=False, num_workers=args.workers)
     model = build_model(torch, args.base_channels).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate, weight_decay=1e-4)
