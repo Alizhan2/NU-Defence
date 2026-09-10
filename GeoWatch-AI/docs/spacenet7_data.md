@@ -27,6 +27,8 @@ records with dates, AOI, source paths, crop coordinates,
 checksums, license and attribution. Event direction is derived from official
 per-date footprint masks with a two-pixel registration tolerance. These are
 reference annotations for the demo, not model predictions or accuracy claims.
+Because source timestamps are monthly, the UI-facing date uses day `01` and the
+catalog explicitly stores `date_granularity: month` and the original periods.
 
 ## Building-change baseline
 
@@ -46,7 +48,19 @@ The test evaluator writes `data/runs/spacenet7_metrics.json`. The application
 shows it as verified only when it is a default test artifact containing the
 checkpoint hash, manifest hash, held-out AOIs, split fingerprint and full-grid
 coverage metadata. On an 8 GB GPU, reduce `--batch` to `4` if CUDA runs out of
-memory.
+memory. Training also writes `best.pt`, `last.pt`, `metrics_val.json`, and a
+`run_manifest.json` containing split fingerprints and checkpoint SHA-256. A
+class absent from ground truth receives a `null` metric, not a perfect score.
+
+On a prepared Windows GPU workstation, the complete sequence can be started
+with one command after extracting the archive:
+
+```powershell
+.\scripts\run_spacenet7_pipeline.ps1 -DatasetRoot D:\datasets\SN7_buildings\train -Python .\.venv\Scripts\python.exe -Epochs 20 -Batch 4
+```
+
+The launcher fails before training when CUDA is unavailable and never downloads
+or silently substitutes data.
 
 Before downloading the full archive, the end-to-end plumbing can be checked on
 generated fixtures. Smoke output is deliberately marked unverified and never

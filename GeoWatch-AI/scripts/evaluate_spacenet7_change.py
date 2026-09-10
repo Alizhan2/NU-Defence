@@ -55,7 +55,7 @@ def main() -> None:
         "aois": sorted({record["aoi"] for record in records}),
         "pairs_evaluated": len(records),
         "tiles_evaluated": tile_count,
-        "evaluation_coverage": "deterministic_full_grid_with_edge_tiles",
+        "evaluation_coverage": "deterministic_nonoverlap_full_grid_with_ignored_edge_padding",
         "split_fingerprint": split_fingerprint(records),
         "metrics": metrics,
         "limitations": ["Pixel-level footprint-mask change baseline", "No claim of operational performance without real test metrics and analyst review"],

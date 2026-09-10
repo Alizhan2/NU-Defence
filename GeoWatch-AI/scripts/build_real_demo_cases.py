@@ -9,6 +9,7 @@ import argparse
 import hashlib
 import json
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 
 import numpy as np
@@ -96,10 +97,17 @@ def choose_case_candidates(candidates: list[WindowCandidate]) -> dict[str, Windo
         return item.pair_index, item.row, item.col
 
     appeared = max(candidates, key=lambda item: (item.appeared_pixels, -item.disappeared_pixels, -item.pair_index, -item.row, -item.col))
+    if appeared.appeared_pixels == 0:
+        raise ValueError("Не найдено окно с подтверждённым появлением footprint.")
     remaining = [item for item in candidates if identity(item) != identity(appeared)]
     disappeared = max(remaining, key=lambda item: (item.disappeared_pixels, item.changed_pixels, -item.pair_index, -item.row, -item.col))
+    if disappeared.disappeared_pixels == 0:
+        raise ValueError("Не найдено окно с подтверждённым исчезновением/изменением footprint.")
     remaining = [item for item in remaining if identity(item) != identity(disappeared)]
-    negative = min(remaining, key=lambda item: (item.changed_pixels, item.pair_index, item.row, item.col))
+    confirmed_negative = [item for item in remaining if item.changed_pixels == 0]
+    if not confirmed_negative:
+        raise ValueError("Не найдено окно без подтверждённого directional footprint-события.")
+    negative = min(confirmed_negative, key=lambda item: (item.pair_index, item.row, item.col))
     return {"appeared": appeared, "disappeared_or_changed": disappeared, "negative_or_uncertain": negative}
 
 
@@ -109,6 +117,13 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _catalog_date(value: str) -> str:
+    """Return an ISO date while preserving SN7's month-level provenance separately."""
+    normalized = f"{value}-01" if len(value) == 7 else value
+    date.fromisoformat(normalized)
+    return normalized
 
 
 def _read_mask(path: Path) -> np.ndarray:
@@ -212,8 +227,13 @@ def build_cases(
             "event_type": catalog_event_types[event_type],
             "before_image": relative_before,
             "after_image": relative_after,
-            "before_date": pair["before_date"],
-            "after_date": pair["after_date"],
+            "before_date": _catalog_date(pair["before_date"]),
+            "after_date": _catalog_date(pair["after_date"]),
+            "date_granularity": "month",
+            "source_periods": {
+                "before": pair["before_date"],
+                "after": pair["after_date"],
+            },
             "aoi": pair["aoi"],
             "source_url": SOURCE_URL,
             "license": LICENSE,
@@ -236,8 +256,8 @@ def build_cases(
                 "disappeared": item.disappeared_pixels,
             },
         }
-        (case_dir / "record.json").write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
         record["sha256"] = {"before_image": _sha256(before_path), "after_image": _sha256(after_path)}
+        (case_dir / "record.json").write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
         records.append(record)
 
     catalog = {

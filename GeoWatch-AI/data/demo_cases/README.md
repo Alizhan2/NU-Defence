@@ -10,6 +10,8 @@ The images are real SpaceNet 7 / Planet monthly imagery. Evidence is derived fro
 the official per-date footprint masks and is **not** a GeoWatch model prediction.
 The negative case only means that the footprint annotations do not confirm a
 building event; it does not prove that nothing else changed.
+The generator stops with an error instead of inventing a category when it cannot
+find a positive appeared crop, a positive disappeared crop, or a zero-event crop.
 
 Generated imagery is intentionally not committed. After downloading and extracting
 the official training archive, run from the repository root:
@@ -23,6 +25,10 @@ The second command writes `catalog.json`, three `cases/<id>/record.json` records
 before/after PNGs, footprint masks and directional evidence masks. Every record
 contains dates, AOI, original relative paths, crop coordinates, checksums, source,
 license and attribution.
+
+SpaceNet 7 timestamps have month granularity. The UI-facing ISO date uses the
+first day of that month and each record retains the original `source_periods` plus
+`date_granularity: month`; it is not presented as an exact acquisition day.
 
 Official source: <https://www.spacenet.ai/sn7-challenge/>  
 License: Creative Commons Attribution-ShareAlike 4.0. Keep the attribution

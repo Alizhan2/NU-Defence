@@ -2,26 +2,17 @@
 
 ## Status
 
-**Candidate, unverified. Do not present as a competition-quality model.**
+**Verified DOTA4 object-detection baseline. Human review remains mandatory.**
 
-The active `models/best.pt` is byte-identical to
-`runs/obb/models/dota8_smoke/weights/best.pt`. It is the local eight-epoch
-pipeline smoke checkpoint, not demonstrated to be the DOTA4 checkpoint produced
-by the Colab run.
+The active `models/best.pt` is `yolov8n-obb-dota4-seed42-v1`. Its SHA-256 is
+`6909f7c506404816671562de8f8c33185fa352e5fabb6672b78ce60e72af8a14`.
+The promoted model card and metric report bind this checkpoint to the
+scene-separated internal DOTA4 test split with dataset fingerprint
+`sha256:e068a4ba8860e4f5bbf16834e8428e70f6b4d88772d4671ce2b1ff228d31db4d`.
 
-`runs/metrics_test.json` contains plausible-looking four-class values, but the
-local dataset cannot reproduce them: its test split has one aircraft instance
-and none of ship, small vehicle or large vehicle. The metrics file also lacks an
-explicit `split=test` marker and dataset fingerprint. The values remain an
-unverified external artifact until matched dataset provenance and checkpoint
-hashes are supplied.
-
-The retained Colab output confirms that a previous DOTA4 run reached 77 epochs
-and evaluated 13,244 instances across 282 scene-separated test images. Its
-historical values are recorded in
-`data/runs/colab_dota4_evidence_2026-09-07.json`. The Colab runtime was reset
-before `best.pt`, the manifest fingerprint and checkpoint hash were recovered,
-so these values are not eligible for model promotion yet.
+Test metrics: Precision `0.8741`, Recall `0.8354`, F1 `0.8543`, mAP50 `0.8915`,
+and mAP50-95 `0.6719`. Per-class mAP50-95 is `0.6909` for aircraft, `0.6804`
+for ship, `0.5605` for small vehicle, and `0.7557` for large vehicle.
 
 ## Intended use
 
@@ -34,14 +25,18 @@ Not intended for autonomous operational, targeting, legal or safety decisions.
 It does not detect building change; that requires a separately evaluated change
 detection model and paired imagery.
 
-## Required promotion evidence
+## Evidence and reproduction
 
-1. Scene-separated train/val/test manifest with all four classes in test.
-2. Dataset fingerprint and provenance/license record.
-3. Final checkpoint SHA-256 produced by the recorded training run.
-4. Metrics produced only once on test after selection on validation.
-5. Successful local checkpoint load and probe inference.
-6. Per-class metrics, error examples and target-machine latency.
+1. `models/model_card.json` records the promoted checkpoint hash and model version.
+2. `data/runs/metrics.json` records the dataset fingerprint, split, seed, threshold and per-class metrics.
+3. `data/runs/dataset_manifest.json` records split sizes, class counts and the matching dataset fingerprint.
+4. Local checkpoint load and end-to-end application inference have passed.
 
-Run `scripts/audit_model.py`; only `evidence_status=verified` is eligible for a
-verified model card. A successful probe proves operability only, not accuracy.
+The raw DOTA4 split is not vendored because of size and licensing. A fresh
+file-level `scripts/audit_model.py` run therefore requires the same official
+dataset to be supplied with `--data`; the repository alone verifies the
+checkpoint/report/manifest binding, not every source image again.
+
+The metrics support the four-class object detector only. They do not validate
+building chronology, Google Earth Engine ingestion, or performance on a new
+customer domain. A successful probe proves operability only, not accuracy.

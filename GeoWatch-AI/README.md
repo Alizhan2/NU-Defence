@@ -47,7 +47,7 @@ Swagger: `http://127.0.0.1:8000/docs`; health: `GET /api/v1/health`.
 
 ## Модель
 
-Обучите DOTA-конвертацию на классах `aircraft`, `ship`, `small vehicle`, `large vehicle` и поместите веса в `models/best.pt`, либо задайте `GEOWATCH_MODEL_PATH`. Не используйте стандартные COCO-веса как доказательство качества на спутниковых снимках. Без файла весов приложение запускается, но честно блокирует inference и не создаёт фиктивные detections.
+В `models/best.pt` установлена проверенная конкурсная модель `yolov8n-obb-dota4-seed42-v1` для классов `aircraft`, `ship`, `small vehicle`, `large vehicle`. Её SHA-256 и независимые test-метрики зафиксированы в `models/model_card.json` и `data/runs/metrics.json`. Можно указать другой checkpoint через `GEOWATCH_MODEL_PATH`; без весов приложение честно блокирует inference и не создаёт фиктивные detections.
 
 ```powershell
 python scripts/train.py --data data/dota4/dota4.yaml --base yolov8n-obb.pt --epochs 80 --imgsz 1024 --batch 4 --device 0 --seed 42 --name dota4_seed42
@@ -83,7 +83,7 @@ python scripts/verify_dataset.py --data data\dota4\dota4.yaml
 
 В репозитории могут присутствовать DOTA8 weights и метрики как **smoke test pipeline**: этот минимальный набор подтверждает только работоспособность цепочки обучения и inference. Он не является доказательством качества модели и не должен выдаваться за конкурсный результат.
 
-Финальными считаются только результаты на изолированном DOTA4 `test` split, прошедшем `verify_dataset.py`, с представленностью всех четырёх классов. В финальный отчёт включите Precision, Recall, F1, mAP50, mAP50-95, per-class AP, latency, threshold, seed, manifest и краткий error analysis.
+Активный checkpoint оценён на изолированном scene-separated DOTA4 `test` split. Зафиксированы Precision `0.8741`, Recall `0.8354`, F1 `0.8543`, mAP50 `0.8915` и mAP50-95 `0.6719`; per-class значения и fingerprint датасета находятся в `data/runs/metrics.json`. Эти метрики относятся только к четырём DOTA-классам и не доказывают качество temporal change detection.
 
 ## Qwen
 
@@ -117,7 +117,7 @@ curl -H "Content-Type: application/json" -d '{"analysis_id":"...","detection_id"
 
 Конкурсные материалы: `docs/demo_script.md`, `docs/submission_readiness.md` и `submission/GeoWatch_AI_Competition_Deck.pptx`.
 
-## Следующий этап
+## Воспроизведение и следующий этап
 
 Подготовлен [план Stage 2](docs/stage2_plan.md), пример `configs/dota_target.example.yaml` и автоматическая проверка train/val/test на пересечения через `scripts/verify_dataset.py`.
 
@@ -125,7 +125,7 @@ curl -H "Content-Type: application/json" -d '{"analysis_id":"...","detection_id"
 
 ## Known issues и roadmap
 
-- Включены smoke-веса DOTA8 и отдельно маркированные smoke-метрики; полноценные метрики требуют scene-separated DOTA test split.
+- DOTA4 object detector проверен на scene-separated test split; отдельная SpaceNet 7 change-detection модель ещё требует реального датасета, обучения и независимой оценки.
 - PDF MVP содержит текстовую таблицу; HTML — более полный конкурсный отчёт.
 - GeoTIFF alignment реализован с общим CRS/grid, NoData и отчётом качества, но требует установленный `rasterio` в целевом runtime.
 - Qwen3-VL тяжёлый и требует отдельной настройки.

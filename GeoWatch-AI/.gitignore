@@ -9,10 +9,13 @@ __pycache__/
 !.env.example
 .pytest_cache/
 .mypy_cache/
+.codex-pptx/
 
 # Local application outputs
-data/runs/
-runs/
+data/runs/*
+!data/runs/metrics.json
+!data/runs/dataset_manifest.json
+/runs/
 wandb/
 *.cache
 
@@ -20,6 +23,7 @@ wandb/
 datasets/
 data/dota4/
 data/dota8_stage2/
+data/spacenet7_smoke/
 models/*.pt
 *.pt
 *.onnx

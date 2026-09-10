@@ -165,17 +165,11 @@ def make_dataset(torch: Any, manifest_path: Path, split: str, patch_size: int, s
 
 
 def _grid_positions(length: int, patch_size: int) -> list[int]:
-    if length <= patch_size:
-        return [0]
-    positions = list(range(0, length - patch_size + 1, patch_size))
-    edge = length - patch_size
-    if positions[-1] != edge:
-        positions.append(edge)
-    return positions
+    return list(range(0, max(length, 1), patch_size))
 
 
 def make_eval_dataset(torch: Any, manifest_path: Path, split: str, patch_size: int):
-    """Cover every image deterministically with a non-overlap grid plus edge tiles."""
+    """Cover every image once with a deterministic grid and ignored edge padding."""
     manifest = load_manifest(manifest_path)
     records = [item for item in manifest["pairs"] if item["split"] == split]
     if not records:
@@ -196,10 +190,12 @@ def make_eval_dataset(torch: Any, manifest_path: Path, split: str, patch_size: i
         def __getitem__(self, index):
             record_index, top, left = tiles[index]
             arrays = load_pair(root, records[record_index])
-            image = _pad(arrays.image, patch_size)
+            image = arrays.image
             target = arrays.target
-            pad_h, pad_w = max(0, patch_size - target.shape[0]), max(0, patch_size - target.shape[1])
+            pad_h = max(0, top + patch_size - target.shape[0])
+            pad_w = max(0, left + patch_size - target.shape[1])
             if pad_h or pad_w:
+                image = np.pad(image, ((0, pad_h), (0, pad_w), (0, 0)), mode="constant")
                 target = np.pad(target, ((0, pad_h), (0, pad_w)), mode="constant", constant_values=255)
             image = image[top:top + patch_size, left:left + patch_size]
             target = target[top:top + patch_size, left:left + patch_size]

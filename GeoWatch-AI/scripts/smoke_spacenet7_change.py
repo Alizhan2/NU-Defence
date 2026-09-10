@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 import tempfile
@@ -11,6 +12,10 @@ import numpy as np
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
+LOCAL_RUNTIME = ROOT / ".runtime"
+if LOCAL_RUNTIME.is_dir():
+    sys.path.insert(0, str(LOCAL_RUNTIME))
+    os.environ["PYTHONPATH"] = str(LOCAL_RUNTIME) + os.pathsep + os.environ.get("PYTHONPATH", "")
 sys.path.insert(0, str(ROOT))
 from scripts.prepare_spacenet7_pairs import build_manifest
 from src.spacenet7_baseline import atomic_json
@@ -20,8 +25,8 @@ def create_fixture(root: Path) -> Path:
     for index in range(3):
         aoi = root / f"AOI_{index:02d}"
         images, labels = aoi / "images_masked", aoi / "labels_match_pix"
-        images.mkdir(parents=True)
-        labels.mkdir()
+        images.mkdir(parents=True, exist_ok=True)
+        labels.mkdir(exist_ok=True)
         before = np.full((64, 64, 3), 50 + index * 15, dtype=np.uint8)
         after = before.copy()
         mask_before = np.zeros((64, 64), dtype=np.uint8)

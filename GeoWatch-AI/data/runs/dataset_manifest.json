@@ -1,0 +1,35 @@
+{
+  "seed": 42,
+  "split": "scene-separated",
+  "images": {
+    "train": 1129,
+    "test": 282,
+    "val": 458
+  },
+  "instances": {
+    "train": {
+      "aircraft": 6860,
+      "large vehicle": 12781,
+      "small vehicle": 21571,
+      "ship": 24762
+    },
+    "test": {
+      "small vehicle": 4555,
+      "large vehicle": 4188,
+      "aircraft": 1195,
+      "ship": 3306
+    },
+    "val": {
+      "small vehicle": 5438,
+      "large vehicle": 4387,
+      "ship": 8960,
+      "aircraft": 2531
+    }
+  },
+  "edge_clipped_polygons": {
+    "train": 114,
+    "test": 6,
+    "val": 14
+  },
+  "dataset_fingerprint": "sha256:e068a4ba8860e4f5bbf16834e8428e70f6b4d88772d4671ce2b1ff228d31db4d"
+}

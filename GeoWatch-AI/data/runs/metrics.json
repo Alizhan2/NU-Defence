@@ -1,0 +1,24 @@
+{
+  "dataset": "DOTA4 scene-separated internal test",
+  "split": "test",
+  "dataset_fingerprint": "sha256:e068a4ba8860e4f5bbf16834e8428e70f6b4d88772d4671ce2b1ff228d31db4d",
+  "checkpoint_sha256": "6909f7c506404816671562de8f8c33185fa352e5fabb6672b78ce60e72af8a14",
+  "model": "yolov8n-obb",
+  "seed": 42,
+  "epochs_requested": 80,
+  "threshold_for_eval": 0.001,
+  "precision": 0.8741225441377869,
+  "recall": 0.8353886339863517,
+  "f1": 0.8543167747931665,
+  "map50": 0.8914588561763033,
+  "map50_95": 0.6718931445919927,
+  "per_class_map50_95": {
+    "aircraft": 0.6909486933283864,
+    "ship": 0.680382745330681,
+    "small vehicle": 0.5605495563290686,
+    "large vehicle": 0.755691583379835
+  },
+  "python": "3.13.15",
+  "torch": "2.11.0+cu128",
+  "ultralytics": "8.4.146"
+}

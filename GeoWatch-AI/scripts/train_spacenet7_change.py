@@ -85,6 +85,13 @@ def main() -> None:
         "test_metrics_present": False,
         "note": "Validation selected best.pt. Run evaluate_spacenet7_change.py on test exactly once for final reporting.",
     }
+    provenance["artifacts"] = {
+        "best_checkpoint": str((args.output / "best.pt").resolve()),
+        "best_checkpoint_sha256": sha256(args.output / "best.pt"),
+        "last_checkpoint": str((args.output / "last.pt").resolve()),
+        "last_checkpoint_sha256": sha256(args.output / "last.pt"),
+        "validation_metrics": str((args.output / "metrics_val.json").resolve()),
+    }
     atomic_json(args.output / "run_manifest.json", provenance)
     print(f"Best checkpoint: {args.output / 'best.pt'}")
 

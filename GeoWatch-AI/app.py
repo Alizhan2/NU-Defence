@@ -27,6 +27,7 @@ from src.qwen_analyst import QwenAnalyst
 from src.reporting import export_batch_zip, export_csv, export_feedback_csv, export_feedback_json, export_html, export_json, export_operational_brief, export_pdf, feedback_records
 from src.review_service import store
 from src.temporal_store import temporal_store
+from src.temporal_ui import REVIEW_STATUS_LABELS, review_decision_hint, review_decision_ready
 from src.case_export import export_case_bundle
 from src.ui import GLOBAL_CSS, evidence_card, kpi_grid, layer_key, map_empty, readiness, temporal_workbench, timeline, topbar, utc_short
 from src.visualization import annotate
@@ -151,7 +152,7 @@ def _event_overlay(image, events, boxes: dict[str, tuple[float, float, float, fl
     return output
 
 
-def render_temporal_workspace(*, before_image, after_image, events, before_boxes, after_boxes, before_label: str, after_label: str, key_prefix: str) -> None:
+def render_temporal_workspace(*, before_image, after_image, events, before_boxes, after_boxes, before_label: str, after_label: str, key_prefix: str, review_available: bool = True) -> None:
     classes = sorted({event.class_name for event in events})
     st.markdown(layer_key(), unsafe_allow_html=True)
     control_col, scene_col, evidence_col = st.columns([.78, 2.15, 1.02], gap="medium")
@@ -209,9 +210,12 @@ def render_temporal_workspace(*, before_image, after_image, events, before_boxes
                 before_id=selected.before_id or "—",
                 after_id=selected.after_id or "—",
             ), unsafe_allow_html=True)
-            if st.button("Открыть очередь проверки", use_container_width=True, key=f"{key_prefix}_review"):
-                navigate("Очередь проверки")
-                st.rerun()
+            if review_available:
+                if st.button("Открыть очередь проверки", use_container_width=True, key=f"{key_prefix}_review"):
+                    navigate("Очередь проверки")
+                    st.rerun()
+            else:
+                st.caption("Reference/demo-событие не добавлено в рабочую очередь. Для решения аналитика выполните анализ загруженной пары.")
 
     st.markdown("#### Хронология доказательств")
     timeline_rows = [
@@ -522,11 +526,20 @@ if page == "Изменения":
         if not selected_case.is_ready:
             st.error("Evidence-файлы этого кейса отсутствуют локально. Метаданные показаны, но визуальное сравнение недоступно.")
             st.stop()
-        before_case = Image.open(selected_case.before_image).convert("RGB")
-        after_case = Image.open(selected_case.after_image).convert("RGB")
+        try:
+            before_case = Image.open(selected_case.before_image).convert("RGB")
+            after_case = Image.open(selected_case.after_image).convert("RGB")
+        except (OSError, ValueError) as exc:
+            st.error(f"Evidence-файл существует, но не читается как изображение: {exc}")
+            st.stop()
         left, right = st.columns(2)
         left.image(before_case, caption=f"До · {selected_case.before_date:%d.%m.%Y}", use_container_width=True)
         right.image(after_case, caption=f"После · {selected_case.after_date:%d.%m.%Y}", use_container_width=True)
+        st.markdown("#### Карточка изменения")
+        if selected_case.event_type == "uncertain":
+            st.info("В footprint-разметке нет подтверждённого directional-события. Это сложный негативный кейс, а не доказательство полного отсутствия изменений.")
+        else:
+            st.info(f"Reference-событие: **{selected_case.event_label}**. Оно используется для демонстрации и последующей проверки вывода модели.")
         st.caption("Реальная пара предназначена для воспроизводимого demo review. Наличие снимков не является доказательством качества ML-модели.")
         st.stop()
     if source == "Демо-сценарий":
@@ -548,8 +561,9 @@ if page == "Изменения":
             before_label=f"До · {demo.before_date:%d.%m.%Y}",
             after_label=f"После · {demo.after_date:%d.%m.%Y}",
             key_prefix="demo_temporal",
+            review_available=False,
         )
-        st.caption("Демо-кейс показывает полный UX-поток. Для фактического анализа загрузите совмещённую пару снимков или подключите Earth Engine.")
+        st.caption("Демо-кейс показывает визуальный walkthrough без записи в evidence store. Для полного потока с решением аналитика загрузите совмещённую пару снимков.")
         st.stop()
     if source == "Google Earth Engine":
         adapter = EarthEngineAdapter()
@@ -720,12 +734,21 @@ if page == "Изменения":
                 key=f"temporal_review_event_{timeline_id}",
             )
             decision_col, note_col = st.columns([1, 2])
-            decision = decision_col.radio("Решение аналитика", ["needs_review", "confirmed", "rejected"], index=["needs_review", "confirmed", "rejected"].index(selected_change.review_status), horizontal=True, key=f"temporal_decision_{selected_change.event_id}")
+            decision = decision_col.radio(
+                "Решение аналитика", ["needs_review", "confirmed", "rejected"],
+                index=["needs_review", "confirmed", "rejected"].index(selected_change.review_status),
+                format_func=lambda value: REVIEW_STATUS_LABELS[value], horizontal=True,
+                key=f"temporal_decision_{selected_change.event_id}",
+            )
             comment = note_col.text_input("Основание", value=selected_change.comment, key=f"temporal_comment_{selected_change.event_id}")
-            if st.button("Сохранить решение по изменению", type="primary", key=f"temporal_save_{selected_change.event_id}"):
+            can_save_review = review_decision_ready(decision, comment)
+            st.caption(review_decision_hint(decision, comment))
+            if st.button("Сохранить решение по изменению", type="primary", disabled=not can_save_review, key=f"temporal_save_{selected_change.event_id}"):
                 temporal_store.review(timeline_id, selected_change.event_id, decision, comment)
                 st.success("Решение сохранено в SQLite и журнале temporal-события.")
                 st.rerun()
+        elif events:
+            st.success("Новых или исчезнувших объектов выше порога нет. Сопоставленные объекты показаны как стабильные; при формальном кейсе вывод всё равно проверяет аналитик.")
         rows = [{
             "Событие": {"appeared": "появилось", "disappeared": "исчезло", "stable": "сохранилось"}[item.status],
             "Класс": item.class_name,
@@ -788,9 +811,14 @@ if page == "Очередь проверки":
                 "Изменение для решения", temporal_pending,
                 format_func=lambda item: f"{CHANGE_LABELS.get(item[1].status, item[1].status)} · {item[1].class_name} · {item[1].event_id[:8]}",
             )
-            temporal_decision = st.radio("Решение", ["confirmed", "rejected", "needs_review"], horizontal=True, key="queue_temporal_decision")
+            temporal_decision = st.radio(
+                "Решение", ["confirmed", "rejected", "needs_review"], horizontal=True,
+                format_func=lambda value: REVIEW_STATUS_LABELS[value], key="queue_temporal_decision",
+            )
             temporal_reason = st.text_area("Основание решения", max_chars=2000, key="queue_temporal_reason")
-            if st.button("Сохранить решение по изменению", type="primary"):
+            temporal_can_save = review_decision_ready(temporal_decision, temporal_reason)
+            st.caption(review_decision_hint(temporal_decision, temporal_reason))
+            if st.button("Сохранить решение по изменению", type="primary", disabled=not temporal_can_save):
                 temporal_store.review(selected_pair[0].comparison_id, selected_pair[1].event_id, temporal_decision, temporal_reason)
                 st.success("Решение по изменению сохранено.")
                 st.rerun()

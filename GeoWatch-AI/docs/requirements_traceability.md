@@ -7,16 +7,16 @@
 | JPG, PNG, GeoTIFF и preprocessing | готово | `src/preprocessing.py`, ограничения размера и пикселей | Проверить на контрольном наборе заказчика |
 | Контроль качества входных данных | готово | `src/image_quality.py`, UI и `POST /api/v1/quality` | Добавить отдельную модель облачности для мультиспектральных данных |
 | Совместимость пары «до/после» | готово | `src/pair_validation.py`: пропорции, CRS, bounds, overlap | Автоматическая репроекция и co-registration |
-| Детекция, класс, bbox, confidence | частично | YOLO pipeline, class-aware NMS, JSON/CSV/HTML/PDF | Финальное обучение и test split |
+| Детекция, класс, bbox, confidence | готово | Проверенный DOTA4 YOLO-OBB checkpoint, class-aware NMS, JSON/CSV/HTML/PDF | Проверить переносимость на данных заказчика |
 | Малые объекты и большие снимки | частично | тайлинг 1024×1024 с overlap | Бенчмарк по размерам объектов |
 | Хронология appeared/disappeared/stable | частично | `src/change_detection.py`, раздел «Изменения» | Пиксельная change segmentation и регистрация кадров |
 | Визуализация результатов | готово | Streamlit command center и аннотированные изображения | Карта с географическими слоями |
 | Экспертная проверка confirm/reject | готово | review queue, persisted feedback | Роли пользователей и аудит действий |
 | Отчётность и API | готово | FastAPI/OpenAPI, JSON/CSV/HTML/PDF exports | Версионирование внешнего контракта |
-| Обучающая/валидационная/тестовая выборки | частично | DOTA-конвертация и smoke split | Scene-separated полный train/val/test |
+| Обучающая/валидационная/тестовая выборки | готово для DOTA4 | Scene-separated train/val/test, dataset fingerprint и checkpoint hash | Подготовить отдельный SpaceNet 7 split |
 | Аннотация, QC, балансировка, augmentation | частично | data card и training pipeline | Двойная проверка разметки и отчёт дисбаланса |
 | Сравнение архитектур | не готово | — | YOLO baseline против RT-DETR/segmentation baseline |
-| Точность, полнота, FP, robustness | частично | evaluation pipeline есть; smoke-метрики не являются конкурсными | Зафиксировать mAP50, precision, recall, F1 и latency на test split |
+| Точность, полнота, FP, robustness | частично | DOTA4: Precision 0.8741, Recall 0.8354, F1 0.8543, mAP50 0.8915, mAP50-95 0.6719 | Добавить domain-shift и SpaceNet 7 evaluation |
 | Производительность и масштабирование | частично | batch processing, tiles, API | Нагрузочный тест и очередь фоновых задач |
 | Защита информации | частично | локальные данные, без секретов во frontend | Auth/RBAC, журнал аудита, threat model, шифрование |
 | Интеграция со спутниковым источником | частично | Earth Engine metadata adapter | Cloud project, авторизация и export одинаковых тайлов |

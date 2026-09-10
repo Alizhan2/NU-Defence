@@ -1,4 +1,4 @@
-# Submission readiness — 8 сентября 2026
+# Submission readiness — 10 сентября 2026
 
 ## Реализовано и проверено локально
 
@@ -9,8 +9,8 @@
 - Идемпотентные alerts, persistent jobs с retry/cancel/dedupe и API endpoints.
 - ZIP-экспорт кейса с JSON-manifest и доступными evidence-файлами.
 - Dataset preparation для SpaceNet 7 с AOI-separated split и provenance manifest.
-- Аудит checkpoint/dataset evidence и явный статус `candidate_unverified`.
-- 78 автоматических тестов проходят; Python-модули компилируются.
+- Продвинутый DOTA4 checkpoint с привязанными SHA-256, manifest и независимыми Colab test-метриками; исходный DOTA split не включён в репозиторий и нужен для повторного file-level аудита.
+- 95 автоматических тестов проходят; checkpoint загружается и end-to-end inference завершается.
 
 ## Экспериментально или частично
 
@@ -21,16 +21,14 @@
 
 ## Внешние блокеры до подтверждённой конкурсной оценки
 
-1. Получить официальный DOTA4 dataset и построить scene-separated train/val/test с четырьмя классами.
-2. Установить GPU-окружение с `torch` и `ultralytics` либо завершить Colab run.
-3. Обучить/выбрать checkpoint по validation и один раз оценить на независимом test split.
-4. Скачать реальные SpaceNet 7 AOI, подготовить пары и обучить building-change baseline.
-5. Настроить Google Cloud Project и Earth Engine authentication для реального получения сцен.
-6. Установить `rasterio` для GeoTIFF reprojection в целевом runtime.
+1. Скачать реальные SpaceNet 7 AOI, подготовить пары и обучить building-change baseline.
+2. Выбрать checkpoint SpaceNet 7 по validation и один раз оценить на независимом test split.
+3. Настроить Google Cloud Project и Earth Engine authentication для реального получения сцен.
+4. Установить `rasterio` для GeoTIFF reprojection в целевом runtime.
 
 ## Нельзя заявлять до фактического подтверждения
 
-- финальную точность, mAP/F1/IoU или скорость на целевом компьютере;
+- точность DOTA4 за пределами зафиксированного внутреннего test split или скорость на другом компьютере;
 - реальное автоматическое обнаружение строительства;
 - работающий cloud-monitoring без запущенного worker;
 - публичный deployment, публикацию GitHub или сдачу решения.
@@ -42,4 +40,3 @@
 - минимум три реальных проверенных кейса, включая negative/сложный пример;
 - проверенный ZIP проекта без секретов и больших исходных датасетов;
 - видео и скриншоты, снятые после фиксации финального интерфейса.
-

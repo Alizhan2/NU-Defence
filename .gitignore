@@ -12,9 +12,14 @@ GeoWatch-AI/streamlit.*.log
 GeoWatch-AI/data/api.*.log
 
 # Generated data, model weights and exports
-GeoWatch-AI/data/runs/
+GeoWatch-AI/data/runs/*
+!GeoWatch-AI/data/runs/metrics.json
+!GeoWatch-AI/data/runs/dataset_manifest.json
 GeoWatch-AI/runs/
 GeoWatch-AI/datasets/
 GeoWatch-AI/models/*.pt
 GeoWatch-AI/*.pt
 GeoWatch-AI/submission/*.zip
+GeoWatch-AI/.codex-pptx/
+GeoWatch-AI/data/spacenet7_smoke/
+/geowatch_last_resume.pt
