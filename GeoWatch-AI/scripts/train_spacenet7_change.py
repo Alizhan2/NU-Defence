@@ -39,7 +39,9 @@ def main() -> None:
     seed_everything(args.seed, torch)
     manifest_path = args.manifest.resolve()
     train_data, train_records, manifest = make_dataset(torch, manifest_path, "train", args.patch_size, args.samples_per_pair, args.seed)
+    print(json.dumps({"stage": "indexing_validation", "train_pairs": len(train_records), "device": str(device)}), flush=True)
     val_data, val_records, _, val_tiles = make_eval_dataset(torch, manifest_path, "val", args.patch_size)
+    print(json.dumps({"stage": "training_ready", "val_pairs": len(val_records), "val_tiles": val_tiles}), flush=True)
     # Samples are grouped by temporal pair so the dataset can reuse decoded
     # GeoTIFFs across that pair's patches. Patch locations remain deterministic.
     train_loader = torch.utils.data.DataLoader(train_data, batch_size=args.batch, shuffle=False, num_workers=args.workers)
@@ -53,6 +55,7 @@ def main() -> None:
     config = vars(args) | {"manifest": str(manifest_path), "output": str(args.output.resolve()), "resolved_device": str(device)}
 
     for epoch in range(1, args.epochs + 1):
+        print(json.dumps({"stage": "epoch_start", "epoch": epoch, "epochs": args.epochs}), flush=True)
         model.train()
         losses = []
         for images, target in train_loader:
